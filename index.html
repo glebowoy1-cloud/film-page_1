@@ -59,25 +59,33 @@
   </div>
 
   <script>
-    const ACCESS_KEY = "BsBk-LORLzYA6wYKwuLJqiVGvBvyHpwy3vaNOJaQDso"; // вставь свой ключ сюда
+    const ACCESS_KEY = "BsBk-LORLzYA6wYKwuLJqiVGvBvyHpwy3vaNOJaQDso"; // твой ключ Unsplash
     const img = document.getElementById('photo');
     const btn = document.getElementById('nextBtn');
 
     async function loadPhoto() {
       img.classList.remove('show');
       try {
-        const res = await fetch(
-          `https://api.unsplash.com/photos/random?query=film-photography&client_id=${ACCESS_KEY}`
-        );
+        const res = await fetch("https://api.unsplash.com/photos/random?query=film-photography", {
+          headers: {
+            Authorization: `Client-ID ${ACCESS_KEY}`
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error("Ошибка API: " + res.status);
+        }
+
         const data = await res.json();
         const url = data.urls.regular;
 
         const pre = new Image();
         pre.onload = () => {
           img.src = url;
-          setTimeout(() => img.classList.add('show'), 20); // быстрый старт анимации
+          setTimeout(() => img.classList.add('show'), 20);
         };
         pre.src = url;
+
       } catch (err) {
         console.error("Ошибка загрузки фото:", err);
       }
