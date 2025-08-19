@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Случайная плёночная фотография</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      flex-direction: column;
+    }
+    img {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      margin-bottom: 20px;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+    }
+    img.show {
+      opacity: 1;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #ff6347;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ff8269;
+    }
+  </style>
+</head>
+<body>
+  <img id="photo" alt="Рандомная плёночная фотография">
+  <button onclick="loadPhoto()">Сменить фото</button>
+
+  <script>
+    function loadPhoto() {
+      const img = document.getElementById('photo');
+      img.classList.remove("show");
+      const newUrl = "https://source.unsplash.com/random/1200x800/?film-photography&sig=" + Math.random();
+
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        img.src = newUrl;
+        setTimeout(() => img.classList.add("show"), 50);
+      };
+      tempImg.src = newUrl;
+    }
+
+    loadPhoto();
+    setInterval(loadPhoto, 10000);
+  </script>
+</body>
+</html>
