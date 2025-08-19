@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Случайная плёночная фотография — коллекции Unsplash</title>
+  <style>
+    :root {
+      --bg: #0e0e0f;
+      --fg: #e9e9ea;
+      --accent: #ff6347;
+    }
+    * { box-sizing: border-box; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding: 16px;
+      gap: 16px;
+      flex-direction: column;
+      text-align: center;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 4px;
+      opacity: .9;
+    }
+    p.sub {
+      margin: 0 0 12px;
+      opacity: .65;
+      font-size: 14px;
+    }
+    .frame {
+      position: relative;
+      max-width: min(92vw, 1200px);
+      max-height: 78vh;
+      width: 100%;
+      aspect-ratio: 3 / 2;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,.55);
+      background: #151517;
+    }
+    img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    img.show { opacity: 1; }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+    button, select {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(255, 99, 71, .35);
+    }
+    button:hover { filter: brightness(1.08); }
+    select {
+      background: #232325;
+      box-shadow: none;
+      color: var(--fg);
+      cursor: pointer;
+    }
+    .hint {
+      font-size: 12px;
+      opacity: .55;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Случайная плёночная фотография</h1>
+  <p class="sub">Источник: публичные коллекции Unsplash</p>
+
+  <div class="frame">
+    <img id="photo" alt="Рандомная плёночная фотография" decoding="async" />
+  </div>
+
+  <div class="controls">
+    <button id="nextBtn" type="button">Сменить фото</button>
+    <select id="collectionSelect" title="Выбор коллекции">
+      <!-- Можно добавить свои ID коллекций -->
+      <option value="190727" selected>Film Photography (190727)</option>
+      <option value="1111575">Analog Vibes (1111575)</option>
+      <option value="8717599">35mm &amp; 120 (8717599)</option>
+    </select>
+  </div>
+  <div class="hint">Фото меняется автоматически каждые 10 секунд. Добавьте свои ID коллекций в выпадающий список.</div>
+
+  <script>
+    // Список коллекций можно настраивать через select (см. разметку выше).
+    const img = document.getElementById('photo');
+    const btn = document.getElementById('nextBtn');
+    const select = document.getElementById('collectionSelect');
+
+    const SIZE = () => {
+      // выбираем размер в зависимости от ширины экрана
+      const w = Math.min(Math.floor(window.innerWidth * 0.92), 1600);
+      const h = Math.floor(w * 2/3);
+      return `${w}x${h}`;
+    };
+
+    function buildUrl() {
+      const collectionId = select.value;
+      const size = SIZE();
+      // Кэш-бастер: timestamp + случайный sig
+      const sig = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      return `https://source.unsplash.com/collection/${collectionId}/${size}?sig=${sig}`;
+    }
+
+    function loadPhoto() {
+      img.classList.remove('show');
+      const url = buildUrl();
+      const pre = new Image();
+      pre.onload = () => {
+        img.src = url;
+        // Небольшая задержка для плавного fade-in
+        setTimeout(() => img.classList.add('show'), 50);
+      };
+      pre.onerror = () => {
+        // На случай сетевой ошибки попробуем ещё раз через коллекцию по умолчанию
+        const fallback = `https://source.unsplash.com/collection/190727/${SIZE()}?sig=${Math.random()}`;
+        const pre2 = new Image();
+        pre2.onload = () => {
+          img.src = fallback;
+          setTimeout(() => img.classList.add('show'), 50);
+        };
+        pre2.src = fallback;
+      };
+      pre.src = url;
+    }
+
+    // Смена фото по кнопке
+    btn.addEventListener('click', loadPhoto);
+
+    // Перезагрузка при смене коллекции
+    select.addEventListener('change', loadPhoto);
+
+    // Автосмена каждые 10 секунд
+    let timer = setInterval(loadPhoto, 10000);
+    // Перезапускаем таймер при интеракции
+    ['click', 'change'].forEach(evt => {
+      document.addEventListener(evt, () => {
+        clearInterval(timer);
+        timer = setInterval(loadPhoto, 10000);
+      }, {passive: true});
+    });
+
+    // Первая загрузка
+    loadPhoto();
+
+    // Обновляем изображение при ресайзе (например, на мобильных поворот экрана)
+    let resizeT;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeT);
+      resizeT = setTimeout(loadPhoto, 400);
+    }, {passive: true});
+  </script>
+</body>
+</html>
