@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Случайная плёночная фотография</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      flex-direction: column;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 { margin-bottom: 10px; font-size: 22px; }
+    .frame {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      margin-bottom: 15px;
+      background: #222;
+    }
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      opacity: 0;
+      transition: opacity 0.6s ease-in-out; /* ускоренная анимация */
+    }
+    img.show { opacity: 1; }
+    .controls { display: flex; gap: 10px; }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #ff6347;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button:hover { background: #ff8269; }
+  </style>
+</head>
+<body>
+  <h1>Случайная плёночная фотография</h1>
+  <div class="frame">
+    <img id="photo" alt="Рандомная плёночная фотография" />
+  </div>
+  <div class="controls">
+    <button id="nextBtn">Сменить фото</button>
+  </div>
+
+  <script>
+    const ACCESS_KEY = "BsBk-LORLzYA6wYKwuLJqiVGvBvyHpwy3vaNOJaQDso"; // вставь свой ключ сюда
+    const img = document.getElementById('photo');
+    const btn = document.getElementById('nextBtn');
+
+    async function loadPhoto() {
+      img.classList.remove('show');
+      try {
+        const res = await fetch(
+          `https://api.unsplash.com/photos/random?query=film-photography&client_id=${ACCESS_KEY}`
+        );
+        const data = await res.json();
+        const url = data.urls.regular;
+
+        const pre = new Image();
+        pre.onload = () => {
+          img.src = url;
+          setTimeout(() => img.classList.add('show'), 20); // быстрый старт анимации
+        };
+        pre.src = url;
+      } catch (err) {
+        console.error("Ошибка загрузки фото:", err);
+      }
+    }
+
+    btn.addEventListener('click', loadPhoto);
+    loadPhoto(); // первая загрузка
+  </script>
+</body>
+</html>
