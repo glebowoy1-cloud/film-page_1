@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Случайная плёночная фотография</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      flex-direction: column;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 { margin-bottom: 10px; font-size: 22px; }
+    .frame {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      margin-bottom: 15px;
+      background: #222;
+    }
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      opacity: 0;
+      transition: opacity 0.4s ease-in-out; /* чуть быстрее загрузка */
+    }
+    img.show { opacity: 1; }
+    .controls { display: flex; gap: 10px; }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #ff6347;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button:hover { background: #ff8269; }
+    .error {
+      margin-top: 10px;
+      color: #f66;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Случайная плёночная фотография</h1>
+  <div class="frame">
+    <img id="photo" alt="Рандомная плёночная фотография" />
+  </div>
+  <div class="controls">
+    <button id="nextBtn">Сменить фото</button>
+  </div>
+  <div class="error" id="errorMsg"></div>
+
+  <script>
+    const ACCESS_KEY = "BsBk-LORLzYA6wYKwuLJqiVGvBvyHpwy3vaNOJaQDso"; // твой ключ Unsplash
+    const img = document.getElementById('photo');
+    const btn = document.getElementById('nextBtn');
+    const errorMsg = document.getElementById('errorMsg');
+
+    async function loadPhoto() {
+      img.classList.remove('show');
+      errorMsg.textContent = ""; // очистка ошибок
+      try {
+        const res = await fetch("https://api.unsplash.com/photos/random?query=film-photography", {
+          headers: {
+            Authorization: `Client-ID ${ACCESS_KEY}`
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error("Ошибка API: " + res.status);
+        }
+
+        const data = await res.json();
+        const url = data.urls.regular;
+
+        const pre = new Image();
+        pre.onload = () => {
+          img.src = url;
+          setTimeout(() => img.classList.add('show'), 20);
+        };
+        pre.src = url;
+
+      } catch (err) {
+        console.error("Ошибка загрузки фото:", err);
+        errorMsg.textContent = "Не удалось загрузить фото 😢 Попробуйте ещё раз.";
+      }
+    }
+
+    btn.addEventListener('click', loadPhoto);
+    loadPhoto(); // первая загрузка
+  </script>
+</body>
+</html>
